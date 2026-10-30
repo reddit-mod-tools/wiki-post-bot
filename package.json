@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@types/lodash": "^4.17.24",
+    "@types/lodash": "^4.17.27",
     "@types/node": "^22.19.19",
     "@vitest/coverage-v8": "^4.1.9",
     "eslint": "10.4.0",
