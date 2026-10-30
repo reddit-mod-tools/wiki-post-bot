@@ -1,6 +1,6 @@
 import { reddit, type Post } from '@devvit/web/server';
-import type { WikiPostEntry } from '@/config/parsePostMap';
-import { applyPostOptions, newPostOptions } from '@/sync/applyPostOptions';
+import type { PostOptions, WikiPostEntry } from '@/config/parsePostMap';
+import { applyPostOptions } from '@/sync/applyPostOptions';
 import { buildPostBody } from '@/sync/buildPostBody';
 import type { WikiPageContent } from '@/sync/readWikiPage';
 import type { SyncContext } from '@/sync/syncContext';
@@ -58,3 +58,11 @@ export async function createWikiPost({
   });
   return post;
 }
+
+/** Options of a freshly made post, before we've set anything */
+const newPostOptions: PostOptions = {
+  sticky: null,
+  distinguish: false,
+  lock: false,
+  flair: null,
+};

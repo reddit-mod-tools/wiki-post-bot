@@ -1,30 +1,30 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   configureLogger,
-  createLogger,
+  _createLogger,
   LogLevel,
   logger,
-  shouldLog,
+  _shouldLog,
 } from '@/lib/logger';
 
-describe(shouldLog, () => {
+describe(_shouldLog, () => {
   it('logs levels at or above the minimum severity', () => {
-    expect(shouldLog(LogLevel.error, LogLevel.info)).toBe(true);
-    expect(shouldLog(LogLevel.warn, LogLevel.info)).toBe(true);
-    expect(shouldLog(LogLevel.info, LogLevel.info)).toBe(true);
-    expect(shouldLog(LogLevel.debug, LogLevel.info)).toBe(false);
+    expect(_shouldLog(LogLevel.error, LogLevel.info)).toBe(true);
+    expect(_shouldLog(LogLevel.warn, LogLevel.info)).toBe(true);
+    expect(_shouldLog(LogLevel.info, LogLevel.info)).toBe(true);
+    expect(_shouldLog(LogLevel.debug, LogLevel.info)).toBe(false);
   });
 
   it('treats error as the strictest minimum', () => {
-    expect(shouldLog(LogLevel.error, LogLevel.error)).toBe(true);
-    expect(shouldLog(LogLevel.warn, LogLevel.error)).toBe(false);
+    expect(_shouldLog(LogLevel.error, LogLevel.error)).toBe(true);
+    expect(_shouldLog(LogLevel.warn, LogLevel.error)).toBe(false);
   });
 });
 
-describe(createLogger, () => {
+describe(_createLogger, () => {
   it('no-ops disabled levels', () => {
     const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
-    createLogger(LogLevel.info).debug('hidden');
+    _createLogger(LogLevel.info).debug('hidden');
     expect(debugSpy).not.toHaveBeenCalled();
     debugSpy.mockRestore();
   });

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { writeCurrentPostLinks } from '@/config/writeCurrentPostLinks';
+import { _writeCurrentPostLinks } from '@/sync/updateConfigPageNotes';
 
-describe(writeCurrentPostLinks, () => {
+describe(_writeCurrentPostLinks, () => {
   it('adds and replaces links while keeping mod comments', () => {
-    const result = writeCurrentPostLinks(
+    const result = _writeCurrentPostLinks(
       configText,
       new Map([
         ['rules', 'https://www.reddit.com/r/example/comments/new1/'],
@@ -34,12 +34,12 @@ describe(writeCurrentPostLinks, () => {
   });
 
   it('removes links for pages with no post and replaces the first entry link', () => {
-    const withLinks = writeCurrentPostLinks(
+    const withLinks = _writeCurrentPostLinks(
       configText,
       new Map([['rules', 'https://www.reddit.com/r/example/comments/new1/']])
     );
 
-    const result = writeCurrentPostLinks(
+    const result = _writeCurrentPostLinks(
       withLinks,
       new Map([['rules', 'https://www.reddit.com/r/example/comments/new3/']])
     );
@@ -54,9 +54,9 @@ describe(writeCurrentPostLinks, () => {
     const links = new Map([
       ['rules', 'https://www.reddit.com/r/example/comments/new1/'],
     ]);
-    const withLinks = writeCurrentPostLinks(configText, links);
+    const withLinks = _writeCurrentPostLinks(configText, links);
 
-    expect(writeCurrentPostLinks(withLinks, links)).toBe(withLinks);
+    expect(_writeCurrentPostLinks(withLinks, links)).toBe(withLinks);
   });
 });
 

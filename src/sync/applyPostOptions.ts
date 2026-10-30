@@ -2,14 +2,6 @@ import { reddit, type Post } from '@devvit/web/server';
 import type { PostOptions } from '@/config/parsePostMap';
 import type { SyncContext } from '@/sync/syncContext';
 
-/** Options of a freshly made post, before we've set anything */
-export const newPostOptions: PostOptions = {
-  sticky: null,
-  distinguish: false,
-  lock: false,
-  flair: null,
-};
-
 /** Set whatever differs between `previous` and `desired` on the post */
 export async function applyPostOptions({
   post,

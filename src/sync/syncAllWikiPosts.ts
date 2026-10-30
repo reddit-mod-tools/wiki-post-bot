@@ -1,7 +1,12 @@
+import _ from 'lodash';
 import moment from 'moment';
 import { reddit } from '@devvit/web/server';
 import type { AppConfig } from '@/config/loadConfig';
-import { parsePostMap, type WikiPostEntry } from '@/config/parsePostMap';
+import {
+  parsePostMap,
+  type PostMapParseResult,
+  type WikiPostEntry,
+} from '@/config/parsePostMap';
 import { logger } from '@/lib/logger';
 import { getPostURL } from '@/lib/reddit/getPostURL';
 import { getWikiPageURL } from '@/lib/reddit/getWikiPageURL';
@@ -12,8 +17,6 @@ import {
 } from '@/sync/applyPostOptions';
 import { buildPostBody } from '@/sync/buildPostBody';
 import { createWikiPost } from '@/sync/createWikiPost';
-import { getRemovedPages } from '@/sync/getRemovedPages';
-import { getSyncAction, SyncAction } from '@/sync/getSyncAction';
 import {
   readWikiPage,
   readWikiPageIfExists,
@@ -74,7 +77,7 @@ async function getSyncLines(config: AppConfig): Promise<string[]> {
   }
 
   const states = await getWikiPostStates();
-  const removedPages = getRemovedPages({
+  const removedPages = _getRemovedPages({
     storedPages: [...states.keys()],
     postMap,
   });
@@ -128,7 +131,7 @@ async function syncEntry({
       );
     }
   );
-  const action = getSyncAction({
+  const action = _getSyncAction({
     entry,
     state,
     wikiRevisionId: wikiPage.revisionId,
@@ -211,10 +214,77 @@ async function updateWikiPost({
   return `${page}: ${changes.join(', ')} on ${postURL}`;
 }
 
-/** `getSyncAction` only returns `none` or `update` when there's a state */
+/** `_getSyncAction` only returns `none` or `update` when there's a state */
 function getStateOrThrow(state: WikiPostState | null): WikiPostState {
   if (state === null) {
     throw new Error('Expected a stored post for this action');
   }
   return state;
+}
+
+/**
+ * Pages we've been syncing that are no longer in the config, so we should
+ * stop syncing them.
+ *
+ * To avoid wiping mappings by accident, this returns nothing when:
+ * 1. The config couldn't be parsed at all (e.g. a YAML typo)
+ * 2. Some bad entry doesn't name a wiki page we can read, since it might be
+ *    one of the stored pages
+ *
+ * A bad entry that does name its page keeps that page's state.
+ */
+export function _getRemovedPages({
+  storedPages,
+  postMap,
+}: {
+  storedPages: string[];
+  postMap: PostMapParseResult;
+}): string[] {
+  if (!postMap.isValid) return [];
+  if (postMap.entryErrors.some((error) => error.wikiPage === null)) return [];
+
+  const configuredPages = new Set([
+    ...postMap.entries.map((entry) => entry.wikiPage),
+    ...postMap.entryErrors.map((error) => error.wikiPage),
+  ]);
+  return storedPages.filter((page) => !configuredPages.has(page));
+}
+
+interface GetSyncActionOptions {
+  entry: Pick<WikiPostEntry, 'postAt' | 'postOptions'>;
+  /** Null when we haven't posted this page yet (or it was re-added) */
+  state: WikiPostState | null;
+  wikiRevisionId: string;
+  nowMs: number;
+}
+
+/** Decide what a sync should do for one config entry */
+export function _getSyncAction({
+  entry,
+  state,
+  wikiRevisionId,
+  nowMs,
+}: GetSyncActionOptions): SyncAction {
+  if (state === null) {
+    const isBeforePostAt =
+      entry.postAt !== null && entry.postAt.getTime() > nowMs;
+    return isBeforePostAt ? SyncAction.wait : SyncAction.create;
+  }
+
+  const hasNewRevision = state.lastSyncedRevisionId !== wikiRevisionId;
+  const hasOptionChanges = !_.isEqual(state.appliedOptions, entry.postOptions);
+  return hasNewRevision || hasOptionChanges
+    ? SyncAction.update
+    : SyncAction.none;
+}
+
+export enum SyncAction {
+  /** No post yet: make one */
+  create = 'create',
+  /** No post yet, but `postAt` hasn't come */
+  wait = 'wait',
+  /** The wiki has a new revision, or the config's post options changed */
+  update = 'update',
+  /** The post already matches the wiki and config */
+  none = 'none',
 }

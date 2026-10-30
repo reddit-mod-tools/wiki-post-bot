@@ -4,12 +4,6 @@ import { commentedOutSampleConfig } from '@/config/sampleConfig';
 import { logger } from '@/lib/logger';
 
 /**
- * `WikiPagePermissionLevel.MODS_ONLY`: only mods can view and edit. Devvit
- * exports the enum as a type only, so we use its value directly.
- */
-const modsOnlyPermLevel: WikiPagePermissionLevel = 2;
-
-/**
  * Create the config wiki page with the commented-out sample if it doesn't
  * exist yet. We do this even with "Make live changes" off, since mods need
  * the page to set anything up, and it doesn't post anything.
@@ -35,3 +29,9 @@ export async function ensureConfigPage(config: AppConfig): Promise<void> {
   });
   logger.info(`Created config page ${configWikiPage}`);
 }
+
+/**
+ * `WikiPagePermissionLevel.MODS_ONLY`: only mods can view and edit. Devvit
+ * exports the enum as a type only, so we use its value directly.
+ */
+const modsOnlyPermLevel: WikiPagePermissionLevel = 2;

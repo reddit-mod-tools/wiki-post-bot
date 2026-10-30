@@ -1,7 +1,5 @@
 import { redis } from '@devvit/web/server';
 
-const lastSyncReportKey = 'lastSyncReport';
-
 /** What the last full sync did, for "View wiki post status" */
 export interface SyncReport {
   finishedAtMs: number;
@@ -19,3 +17,5 @@ export async function getLastSyncReport(): Promise<SyncReport | null> {
   const json = await redis.get(lastSyncReportKey);
   return json != null ? JSON.parse(json) : null;
 }
+
+const lastSyncReportKey = 'lastSyncReport';

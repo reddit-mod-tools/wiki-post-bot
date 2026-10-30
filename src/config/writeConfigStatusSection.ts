@@ -1,7 +1,3 @@
-const startMarker =
-  '# ---- wiki-post-bot status (written by the bot; edits here get replaced) ----';
-const endMarker = '# ---- end of wiki-post-bot status ----';
-
 /**
  * What we write when the config can't be parsed at all: a short explanation,
  * then the full error. YAML errors span several lines (a message, then the
@@ -59,3 +55,7 @@ export function removeStatusSection(configText: string): string {
   const rest = after.replace(/^\n+/, '');
   return rest !== '' ? `${before}\n\n${rest}` : `${before}\n`;
 }
+
+const startMarker =
+  '# ---- wiki-post-bot status (written by the bot; edits here get replaced) ----';
+const endMarker = '# ---- end of wiki-post-bot status ----';

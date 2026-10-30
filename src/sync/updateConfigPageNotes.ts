@@ -1,17 +1,15 @@
+import { isMap, isSeq, parseDocument } from 'yaml';
 import { reddit } from '@devvit/web/server';
 import type { AppConfig } from '@/config/loadConfig';
+import { normalizeWikiPage } from '@/config/normalizeWikiPage';
 import {
   getConfigErrorStatusLines,
   writeConfigStatusSection,
 } from '@/config/writeConfigStatusSection';
-import { writeCurrentPostLinks } from '@/config/writeCurrentPostLinks';
 import { logger } from '@/lib/logger';
 import { getPostURL } from '@/lib/reddit/getPostURL';
 import { readWikiPage, type WikiPageContent } from '@/sync/readWikiPage';
 import { getWikiPostStates } from '@/sync/wikiPostState';
-
-/** Shows up in the config page's revision history */
-const configNotesReason = 'wiki-post-bot: update post links and status';
 
 interface UpdateConfigPageNotesOptions {
   config: AppConfig;
@@ -59,9 +57,14 @@ async function writeConfigPageNotes({
   );
   const newContent =
     configError === null && config.makeChanges
-      ? writeCurrentPostLinks(
+      ? _writeCurrentPostLinks(
           withStatus,
-          await getPostURLByWikiPage(subredditName)
+          new Map(
+            [...(await getWikiPostStates())].map(([wikiPage, state]) => [
+              wikiPage,
+              getPostURL(subredditName, state.postId),
+            ])
+          )
         )
       : withStatus;
   if (newContent === configPage.content) return;
@@ -82,14 +85,75 @@ async function writeConfigPageNotes({
   });
 }
 
-async function getPostURLByWikiPage(
-  subredditName: string
-): Promise<Map<string, string>> {
-  const states = await getWikiPostStates();
-  return new Map(
-    [...states].map(([wikiPage, state]) => [
-      wikiPage,
-      getPostURL(subredditName, state.postId),
-    ])
-  );
+/**
+ * Add or update the `# Current post: <link>` comment above each entry in the
+ * config YAML, and drop it from entries with no post yet.
+ *
+ * Mods' own comments stay where they are. Returns `configText` unchanged
+ * (same string) when no link changed, so callers can skip the wiki edit.
+ */
+export function _writeCurrentPostLinks(
+  configText: string,
+  /** Post URL for each wiki page that currently has a post */
+  postURLByWikiPage: Map<string, string>
+): string {
+  const doc = parseDocument(configText);
+  if (doc.errors.length > 0) return configText;
+
+  const posts = doc.get('posts', true);
+  if (!isSeq(posts)) return configText;
+
+  let hasChanges = false;
+  posts.items.forEach((item, index) => {
+    if (!isMap(item)) return;
+    const rawWikiPage = item.get('wikiPage');
+    const postURL =
+      typeof rawWikiPage === 'string'
+        ? (postURLByWikiPage.get(normalizeWikiPage(rawWikiPage)) ?? null)
+        : null;
+
+    // The yaml library attaches comments above the first list item to the
+    // list itself, so an old link for the first entry can live there
+    if (index === 0) {
+      const listComment = withoutLinkLines(posts.commentBefore);
+      if (listComment !== (posts.commentBefore ?? null)) {
+        posts.commentBefore = listComment;
+        hasChanges = true;
+      }
+    }
+
+    const keptLines = withoutLinkLines(item.commentBefore);
+    const newComment = [
+      postURL !== null
+        ? ` ${currentPostPrefix} ${postURL} (set by wiki-post-bot)`
+        : null,
+      keptLines,
+    ]
+      .filter((part) => part !== null)
+      .join('\n');
+    const newCommentOrNull = newComment !== '' ? newComment : null;
+    if (newCommentOrNull !== (item.commentBefore ?? null)) {
+      item.commentBefore = newCommentOrNull;
+      hasChanges = true;
+    }
+  });
+
+  // Re-serializing can normalize a little whitespace, so only do it when a
+  // link actually changed. lineWidth 0 keeps long titles from being folded.
+  return hasChanges ? doc.toString({ lineWidth: 0 }) : configText;
 }
+
+/** Remove our link lines from a comment; null when nothing is left */
+function withoutLinkLines(comment: string | null | undefined): string | null {
+  if (comment == null) return null;
+  const kept = comment
+    .split('\n')
+    .filter((line) => !line.trim().startsWith(currentPostPrefix));
+  return kept.length > 0 ? kept.join('\n') : null;
+}
+
+/** Shows up in the config page's revision history */
+const configNotesReason = 'wiki-post-bot: update post links and status';
+
+/** Comment text after `#` that marks our link lines */
+const currentPostPrefix = 'Current post:';

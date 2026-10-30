@@ -5,8 +5,6 @@ import { normalizeWikiPage } from '@/config/normalizeWikiPage';
 import { DEFAULT_MIN_LOG_LEVEL, LogLevel } from '@/lib/logger';
 import { withRedditRetries } from '@/lib/reddit/withRedditRetries';
 
-export const DEFAULT_CONFIG_WIKI_PAGE = 'wiki-post-bot/config';
-
 /**
  * Resolved app settings for the current subreddit.
  * Field labels and help text live in `devvit.json` under `settings.subreddit`.
@@ -20,15 +18,6 @@ export interface AppConfig {
   configWikiPage: string;
   subredditName: string;
 }
-
-const rawSettingsSchema = z.object({
-  makeChanges: z.boolean().optional(),
-  // Devvit returns `select` settings as string arrays (same wire format as multi-select).
-  minLogLevel: z
-    .array(z.enum(Object.values(LogLevel) as [LogLevel, ...LogLevel[]]))
-    .optional(),
-  configWikiPage: z.string().optional(),
-});
 
 /** Load and validate app config from Devvit settings plus the current subreddit. */
 export async function loadConfig(): Promise<AppConfig> {
@@ -66,6 +55,15 @@ export function _parseConfigFromSettings(
   return {
     makeChanges: raw.makeChanges ?? false,
     minLogLevel: raw.minLogLevel?.[0] ?? DEFAULT_MIN_LOG_LEVEL,
-    configWikiPage: configWikiPage || DEFAULT_CONFIG_WIKI_PAGE,
+    configWikiPage: configWikiPage || 'wiki-post-bot/config',
   };
 }
+
+const rawSettingsSchema = z.object({
+  makeChanges: z.boolean().optional(),
+  // Devvit returns `select` settings as string arrays (same wire format as multi-select).
+  minLogLevel: z
+    .array(z.enum(Object.values(LogLevel) as [LogLevel, ...LogLevel[]]))
+    .optional(),
+  configWikiPage: z.string().optional(),
+});
