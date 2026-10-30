@@ -1,0 +1,92 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "wiki-post-bot",
+  "server": {
+    "dir": "dist/server",
+    "entry": "index.cjs"
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Sync wiki posts now",
+        "description": "Copy any wiki changes into their posts right away, instead of waiting for the next 5-minute check.",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/sync-now"
+      },
+      {
+        "label": "View wiki post status",
+        "description": "Show each configured wiki page's post, pending scheduled posts, and config errors.",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/view-status"
+      },
+      {
+        "label": "Repost from wiki",
+        "description": "Replace this wiki-post-bot post with a brand-new post. The old post gets unstickied, locked, and linked to the new one.",
+        "location": "post",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/repost"
+      }
+    ]
+  },
+  "forms": {
+    "viewStatus": "/internal/form/view-status-dismiss"
+  },
+  "scheduler": {
+    "tasks": {
+      "syncWikiPosts": {
+        "endpoint": "/internal/scheduler/sync-wiki-posts",
+        "cron": "*/5 * * * *"
+      }
+    }
+  },
+  "triggers": {
+    "onAppInstall": "/internal/triggers/on-app-install",
+    "onAppUpgrade": "/internal/triggers/on-app-upgrade",
+    "onModAction": "/internal/triggers/on-mod-action"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch"
+  },
+  "permissions": {
+    "reddit": {
+      "enable": true,
+      "scope": "moderator"
+    },
+    "redis": true
+  },
+  "settings": {
+    "subreddit": {
+      "configWikiPage": {
+        "type": "string",
+        "label": "Config wiki page",
+        "helpText": "Wiki page that lists which wiki pages to post, in YAML. The app creates it with a commented-out example when installed. All options and an example: https://github.com/reddit-mod-tools/wiki-post-bot#configuration",
+        "defaultValue": "wiki-post-bot/config",
+        "placeholder": "wiki-post-bot/config"
+      },
+      "makeChanges": {
+        "type": "boolean",
+        "label": "Make live changes",
+        "helpText": "When off, the bot only logs and shows in \"View wiki post status\" what it would post or edit. It still creates the config page.",
+        "defaultValue": false
+      },
+      "minLogLevel": {
+        "type": "select",
+        "label": "Minimum log level",
+        "helpText": "Minimum severity to emit to the app logs. Debug is the most verbose.",
+        "defaultValue": "info",
+        "options": [
+          { "label": "error", "value": "error" },
+          { "label": "warn", "value": "warn" },
+          { "label": "info", "value": "info" },
+          { "label": "debug", "value": "debug" }
+        ]
+      }
+    }
+  },
+  "dev": {
+    "subreddit": "wiki_post_bot_dev"
+  }
+}

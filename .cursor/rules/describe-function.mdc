@@ -1,0 +1,7 @@
+---
+description: Write `describe(someFunction)` without quotes. Applies to *.test.ts
+alwaysApply: true
+---
+
+When writing `describe` rules in tests for functions, directly do
+describe(someFunction) instead of `describe('someFunction')`
