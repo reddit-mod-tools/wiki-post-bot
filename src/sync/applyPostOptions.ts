@@ -25,9 +25,10 @@ export async function applyPostOptions({
   const { subredditName } = context.config;
 
   if (desired.sticky !== previous.sticky) {
-    await (desired.sticky !== null
-      ? post.sticky(desired.sticky)
-      : post.unsticky());
+    // Reddit returns 409 Conflict when stickying a post that's already
+    // stickied, so moving between slots needs an unsticky first
+    if (previous.sticky !== null) await post.unsticky();
+    if (desired.sticky !== null) await post.sticky(desired.sticky);
   }
   if (desired.distinguish !== previous.distinguish) {
     await (desired.distinguish ? post.distinguish() : post.undistinguish());
