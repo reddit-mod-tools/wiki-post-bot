@@ -1,0 +1,81 @@
+---
+description: Structure code files using the pyramid principle: put exported or externally used parts first, and implementation details after. Applies to all code files.
+alwaysApply: true
+---
+
+Structure your code files using the pyramid principle: put exported or externally used
+parts first, and implementation details after.
+
+This applies to functions, interfaces, and types. The only exception is that
+function input/output interfaces should come immediately before the function
+they are for, with input interface first, then output interface, then the
+function.
+
+In test files (`*.test.ts`, `*.alwaysRun.test.ts`), order in the following
+order:
+
+- `beforeAll`/`afterAll`
+- `it` and `describe` blocks
+- Helper functions (including local makeXXX FakeData makers)
+
+Exception: data passed to `it.each` at registration time (e.g.
+`it.each(testCases)`) must be defined **above** `describe` — `const testCases`
+is not hoisted.
+
+Exception: testdata generator tests under `**/__testData__/**/index.test.ts`
+may keep helper functions and their option interfaces above the generator
+invocation(s) at the bottom of the file (e.g. `makeTestDataGeneratorTest(...)`).
+
+In script files (`server/scripts/**/*.ts`), put the `runScript(...)` call at the
+very bottom of the file.
+
+**Good:**
+
+```tsx
+// Note: you don't necessarily need to have separate types above the function
+// and can also include these inline in the function declaration as well
+// (e.g., { geoId }: { geoId: number }): Promise<{ places..., restaurants... }>,
+// but if they are separate, put them _above_ the function
+interface GetMostPopularPlacesAndRestaurantsOptions {
+  geoId: number;
+}
+
+// Note: this can also be inlined if it's not likely to be used elsewhere
+interface GetMostPopularPlacesAndRestaurantsResults {
+  places: GooglePlace[];
+  restaurants: GooglePlace[];
+}
+
+export async function getMostPopularPlacesAndRestaurants(
+  { geoId }: { geoId: number }, // or
+  { geoId }: GetMostPopularPlacesAndRestaurantsOptions,
+): Promise<GetMostPopularPlacesAndRestaurantsResults> {
+  // or: Promise<{ places: GooglePlace[], restaurants: GooglePlace[] }>
+  const places = await getPopularPlaces(geoId);
+  const restaurants = await getPopularRestaurants(geoId);
+  return {
+    places: sortByPopularity(places),
+    restaurants: sortByPopularity(restaurants),
+  };
+}
+
+async function getPopularPlaces(geoId: number) {}
+async function getPopularRestaurants(geoId: number) {}
+function sortByPopularity(places: GooglePlace[]): GooglePlace[] {}
+```
+
+**Bad:**
+
+```tsx
+function sortByPopularity(places: GooglePlace[]): GooglePlace[] {}
+
+async function getPopularPlaces(geoId: number) {}
+
+async function getPopularRestaurants(geoId: number) {}
+
+export async function getMostPopularPlacesAndRestaurants(
+  geoId: number,
+): Promise<{ places: GooglePlace[]; restaurants: GooglePlace[] }> {
+  // ...
+}
+```
