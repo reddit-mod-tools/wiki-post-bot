@@ -2,16 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { buildPostBody, maxPostBodyLength } from '@/sync/buildPostBody';
 
 describe(buildPostBody, () => {
-  it('adds a footer linking to the wiki page', () => {
+  it('returns pages that fit without a footer', () => {
     expect(
       buildPostBody({
         wikiMarkdown: '# Rules\n\n1. Be nice\n\n',
         subredditName: 'example',
         wikiPage: 'rules',
       })
-    ).toBe(
-      '# Rules\n\n1. Be nice\n\n---\n\n*This post is copied from the [wiki page](https://www.reddit.com/r/example/wiki/rules) and updates when the wiki changes.*'
-    );
+    ).toBe('# Rules\n\n1. Be nice');
   });
 
   it('cuts off long pages at a line break and links to the full page', () => {
