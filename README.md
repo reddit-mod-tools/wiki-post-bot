@@ -18,10 +18,11 @@ List which wiki pages to post in a config wiki page, and wiki-post-bot:
    newer wiki on new Reddit, edit it on old Reddit:
    `https://old.reddit.com/r/<subreddit>/wiki/edit/wiki-post-bot/config`.
 3. Edit the config page (see [Configuration](#configuration)).
-4. In the app's install settings, **Make live changes** starts off. While it's
-   off, the bot only reports what it would do: open the subreddit's mod menu
-   and pick **View wiki post status** to check. Turn it on when the plan looks
-   right.
+4. In the app's install settings, **Make live changes** starts on, so the bot
+   posts as soon as the config has entries. To preview first, turn it off:
+   the bot then only reports what it would do, which you can check by opening
+   the subreddit's mod menu and picking **View wiki post status**. Turn it back
+   on when the plan looks right.
 
 ## Configuration
 

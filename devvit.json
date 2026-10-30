@@ -70,7 +70,7 @@
         "type": "boolean",
         "label": "Make live changes",
         "helpText": "When off, the bot only logs and shows in \"View wiki post status\" what it would post or edit. It still creates the config page and notes config errors on it.",
-        "defaultValue": false
+        "defaultValue": true
       },
       "minLogLevel": {
         "type": "select",

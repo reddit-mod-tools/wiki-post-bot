@@ -53,7 +53,7 @@ export function _parseConfigFromSettings(
   const raw = parsed.data;
   const configWikiPage = normalizeWikiPage(raw.configWikiPage ?? '');
   return {
-    makeChanges: raw.makeChanges ?? false,
+    makeChanges: raw.makeChanges ?? true,
     minLogLevel: raw.minLogLevel?.[0] ?? DEFAULT_MIN_LOG_LEVEL,
     configWikiPage: configWikiPage || 'wiki-post-bot/config',
   };

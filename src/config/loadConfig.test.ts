@@ -7,7 +7,7 @@ import { _parseConfigFromSettings } from '@/config/loadConfig';
 describe(_parseConfigFromSettings, () => {
   it('uses defaults when settings are unset', () => {
     expect(_parseConfigFromSettings({})).toEqual({
-      makeChanges: false,
+      makeChanges: true,
       minLogLevel: 'info',
       configWikiPage: 'wiki-post-bot/config',
     });
