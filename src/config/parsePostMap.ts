@@ -6,6 +6,7 @@ import {
   parsePostAt,
   postAtFormatHelp,
 } from '@/config/parsePostAt';
+import { removeStatusSection } from '@/config/writeConfigStatusSection';
 
 /**
  * Result of reading the config wiki page. When the whole page is unreadable
@@ -67,7 +68,7 @@ export interface EntryError {
 
 /** Parse the YAML from the config wiki page */
 export function parsePostMap(text: string): PostMapParseResult {
-  const doc = parseDocument(text);
+  const doc = parseDocument(removeStatusSection(text));
   const syntaxError = doc.errors[0];
   if (syntaxError !== undefined) {
     return {

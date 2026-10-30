@@ -13,7 +13,10 @@ List which wiki pages to post in a config wiki page, and wiki-post-bot:
 
 1. Install the app on your subreddit from its page on developers.reddit.com.
 2. The app creates the config page at `/wiki/wiki-post-bot/config` with a
-   commented-out example. Only mods can see or edit it.
+   commented-out example, a link to these docs, and how to check status or
+   sync right away. Only mods can see or edit it. On subreddits that show the
+   newer wiki on new Reddit, edit it on old Reddit:
+   `https://old.reddit.com/r/<subreddit>/wiki/edit/wiki-post-bot/config`.
 3. Edit the config page (see [Configuration](#configuration)).
 4. In the app's install settings, **Make live changes** starts off. While it's
    off, the bot only reports what it would do: open the subreddit's mod menu
@@ -76,7 +79,9 @@ Delete an entry to stop syncing that page. The bot leaves the existing post
 alone. If you add the entry back later, the bot makes a new post.
 
 If the config has a YAML error, the bot doesn't sync or stop syncing anything
-until it's fixed. **View wiki post status** shows the error.
+until it's fixed. It adds a status section with the full error at the end
+of the config page, and removes it once the config is fixed. **View wiki post
+status** in the mod menu shows the error too.
 
 ### Scheduling
 

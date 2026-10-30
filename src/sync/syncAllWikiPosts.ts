@@ -21,7 +21,7 @@ import {
 } from '@/sync/readWikiPage';
 import { makeSyncContext, type SyncContext } from '@/sync/syncContext';
 import { saveSyncReport, type SyncReport } from '@/sync/syncReport';
-import { updateConfigPostLinks } from '@/sync/updateConfigPostLinks';
+import { updateConfigPageNotes } from '@/sync/updateConfigPageNotes';
 import {
   deleteWikiPostStates,
   getWikiPostStates,
@@ -62,6 +62,11 @@ async function getSyncLines(config: AppConfig): Promise<string[]> {
 
   const postMap = parsePostMap(configPage.content);
   if (!postMap.isValid) {
+    await updateConfigPageNotes({
+      config,
+      configPage,
+      configError: postMap.error,
+    });
     return [
       `Config error in ${configURL}: ${postMap.error}`,
       'Nothing was synced or removed until this is fixed.',
@@ -91,7 +96,8 @@ async function getSyncLines(config: AppConfig): Promise<string[]> {
     );
   }
 
-  if (makeChanges) await updateConfigPostLinks({ config, configPage });
+  // After syncing entries, so new posts get their links right away
+  await updateConfigPageNotes({ config, configPage, configError: null });
 
   return [
     ...postMap.entryErrors.map((error) => `Config error: ${error.message}`),

@@ -5,7 +5,7 @@ import { getPostURL } from '@/lib/reddit/getPostURL';
 import { createWikiPost } from '@/sync/createWikiPost';
 import { readWikiPage, readWikiPageIfExists } from '@/sync/readWikiPage';
 import { makeSyncContext } from '@/sync/syncContext';
-import { updateConfigPostLinks } from '@/sync/updateConfigPostLinks';
+import { updateConfigPageNotes } from '@/sync/updateConfigPageNotes';
 import { getWikiPostStates } from '@/sync/wikiPostState';
 import { withSyncLock } from '@/sync/withSyncLock';
 
@@ -73,7 +73,7 @@ export async function repostWikiPost(
     });
     await comment.distinguish(true);
 
-    await updateConfigPostLinks({ config, configPage });
+    await updateConfigPageNotes({ config, configPage, configError: null });
     return `Reposted "${wikiPage}": ${newPostURL}`;
   });
 
